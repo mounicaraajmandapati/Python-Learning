@@ -1,0 +1,112 @@
+# The aim of this project is to clean the data and analyze the included used car listings in eBay kleinanzeigen dataset.
+
+# reading CSV file into pandas dataframe
+import pandas as pd
+autos = pd.read_csv('autos.csv',encoding ='latin1')
+# Due to encoding error, try two most popular encodings (Latin-1 and Windows-1252) while loading to prevent errors
+
+# dataframe.info() gives the number of rows, number of columns , column names, column types
+autos.info()
+
+#dataframe.head() gives the first few rows in the dataframe
+autos.head()
+
+#dataframe.column prints an array of the existing column names
+autos.columns
+
+#dataframe.rename(column ={'old_name':'new_name'},inplace = True)
+autos.rename(columns={'yearOfRegistration':'registration_year'}, inplace=True)
+autos.rename(columns={'monthOfRegistration':'registration_month'}, inplace=True)
+autos.rename(columns={'notRepairedDamage':'unrepaired_damage'}, inplace=True)
+autos.rename(columns={'dateCreated':'ad_created'}, inplace=True)
+
+# To convert columnn names from camelcase to snakecase created the following function:
+import re
+def camel_to_snake(s):
+    return re.sub("([A-Z])", "_\\1", s).lower().lstrip("_")
+
+a1 = camel_to_snake("dateCrawled")
+a2 = camel_to_snake("offerType")
+a3 = camel_to_snake("vehicleType")
+
+autos.rename(columns={'dateCrawled':a1}, inplace=True)
+autos.rename(columns={'offerType':a2}, inplace=True)
+autos.rename(columns={'vehicleType':a3}, inplace=True)
+
+# DataFrame.describe() to look at descriptive statistics for all numeric columns
+# DataFrame.describe(include = 'all') to look at descriptive statistics for all columns
+autos.describe(include = 'all')
+autos.describe()
+
+# On observing the descriptive statistics, the observations I found are:
+# Number of pictures column has zero values for all the rows. 
+# Registration year has maximum 9999 (have to check more on this). 
+# Price has a dollar sign and is treated as character instead of numeric column. 
+# Also, odometer has units at last and is considered as character column instead of numeric column.
+
+# To remove the $ and comma in price column and convert it to integer, use str.replace
+autos["price"] = (autos["price"].str.replace("$","").str.replace(",","").astype(int))
+
+# Series.unique().shape to see how many unique values
+# Series.describe() to view min/max/median/mean etc
+# Series.value_counts().head() to view the first few values and their frequencies
+# series.sort_index(ascending = true) gives the least index values in ascending order with their count(simlarly descending if ascending = false)
+autos.price.unique() # gives series of uniques values
+autos.price.unique().shape # gives number of unique values
+autos.price.describe() # gives summary statistics of that column
+autos.price.value_counts() # gives values and its frequency in that column
+
+#There are a number of listings with prices below \$30, including about 1,500 at \$0. 
+# There are also a small number of listings with very high values, including 14 at around or over $1 million.
+# Given that eBay is an auction site, there could legitimately be items where the opening bid is \$1. 
+# We will keep the \$1 items, but remove anything above \$350,000
+# Since it seems that prices increase steadily to that number and then jump up to less realistic numbers.
+
+# retaining only values between 1 to 350000 and removing the remaining values
+autos = autos[autos["price"].between(1,351000)]  # 351000 will not be included as this function is exclusive.
+autos["price"].describe()
+
+# series.str[:10]  to select the first 10 characters in each column
+# Series.value_counts(normalize=True, dropna=False)  to include missing values in the distribution and to use percentages instead of counts
+(autos["date_crawled"].str[:10].value_counts(normalize=True, dropna=False).sort_index())
+
+# To select brands representing more than 5% of total listings.
+brand_counts = autos["brand"].value_counts(normalize=True)
+common_brands = brand_counts[brand_counts > .05].index
+print(common_brands)
+
+# To get the distinct price gap in top brands
+brand_mean_prices = {}
+for brand in common_brands:
+    brand_only = autos[autos["brand"] == brand]
+    mean_price = brand_only["price"].mean()
+    brand_mean_prices[brand] = int(mean_price)
+brand_mean_prices
+
+# Exploring mileage
+# To add the dictionary to the dataframe, first convert it into series object, then to dataframe.
+# Add this dataframe to the original dataframe
+bmp_series = pd.Series(brand_mean_prices)
+pd.DataFrame(bmp_series, columns=["mean_price"])
+
+brand_mean_mileage = {}
+
+for brand in common_brands:
+    brand_only = autos[autos["brand"] == brand]
+    mean_mileage = brand_only["odometer_km"].mean()
+    brand_mean_mileage[brand] = int(mean_mileage)
+
+mean_mileage = pd.Series(brand_mean_mileage).sort_values(ascending=False)
+mean_prices = pd.Series(brand_mean_prices).sort_values(ascending=False)
+
+
+brand_info = pd.DataFrame(mean_mileage,columns=['mean_mileage'])
+brand_info
+
+brand_info["mean_price"] = mean_prices
+brand_info
+
+# From the above results we can say that the range of car mileages does not vary as much as the prices do by brand ,
+# instead all falling within 10% for the top brands. 
+# There is a slight trend to the more expensive vehicles having higher mileage,
+# with the less expensive vehicles having lower mileage.
