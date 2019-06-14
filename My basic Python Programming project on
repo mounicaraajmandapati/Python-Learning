@@ -1,0 +1,55 @@
+# This is about 2 datasets which are:
+# A data set containing data about approximately 10,000 Android apps from Google Play; the data was collected in August 2018.
+# A data set containing data about approximately 7,000 iOS apps from the App Store; the data was collected in July 2017.
+
+# This project is about basic exploration of datasets, cleaning,creating a dictionary 
+
+# Task1: created function to open and explore the datasets
+
+def explore_data(dataset, start, end, rows_and_columns=False):
+    dataset_slice = dataset[start:end]    
+    for row in dataset_slice:
+        print(row)
+        print('\n') # adds a new (empty) line after each row for blank space between rows
+
+    if rows_and_columns:
+        print('Number of rows:', len(dataset))
+        print('Number of columns:', len(dataset[0]))
+
+# This function takes in 4 arguments and slices dataset according to the arguments 
+# and prints the number of rows and columns if 4th argument is TRUE.
+
+#Using the above created function to open and explore the Google Play and App Store datasets
+
+import pandas as pd
+apple = pd.read_csv('AppleStore.csv')
+google = pd.read_csv('googleplaystore.csv')
+explore_data(apple,0,100,TRUE)
+explore_data(google,0,100,TRUE)
+
+# Task 2: Basic data cleaning like deleting incorrect records and indetifying duplicate records
+#On exploring records from above function, the record with index 15 is found to be incorrect.So, it should be deleted.
+
+del apple[15]
+
+#Identifying duplicate records by using the below function:
+duplicate_app = []
+unique_app = []
+
+for app in android:
+    name = app[0]
+    if name in unique_app:
+       duplicate_app.append(name)
+    else:
+       unique_app.append(name)
+print('Number of dupliate apps:',len(duplicate_app)
+print('List of duplicate apps:',duplicate_app)
+
+
+# Task 3: Create a dictionary where each key is a unique app name 
+# and the corresponding dictionary value is the highest number of reviews of that app.
+
+
+
+
+
