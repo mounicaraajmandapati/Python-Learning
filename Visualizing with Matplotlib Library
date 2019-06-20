@@ -1,0 +1,60 @@
+# This dataset is about the job outcomes of students graduated from college between 2010 and 2012.
+# The aim of this project is to visualise the earnings based on college Majors
+
+
+# Importing libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Run the Jupyter magic %matplotlib inline so that plots are displayed inline ie directly below the code cell that produced it
+%matplotlib inline
+
+# Reading the recent-grads.csv into pandas and assign the resulting DataFrame to recent_grads
+recent_grads = pd.read_csv('recent-grads.csv')
+
+# Exploring data structure and summary statistics
+recent_grads.head()
+recent_grads.tail()
+recent_grads.describe()
+
+# Matplotlib expects that columns of values we pass in have matching lengths
+# Missing values will cause matplotlib to throw errors
+
+# Use dataframe.dropna() to remove missing values
+# using shape function to keep a record of the row count before and after removing missing values
+raw_data_count, raw_columns = recent_grads.shape
+raw_data_count
+recent_grads = recent_grads.dropna()
+cleaned_data_count, cleaned_columns = recent_grads.shape
+cleaned_data_count
+
+# from the previous row counts, it is observed that one record has missing values and is removed.
+plt.scatter(recent_grads['Sample_size'], recent_grads['Median'])
+plt.scatter(recent_grads['Sample_size'], recent_grads['Unemployment_rate'])
+plt.scatter(recent_grads['Full_time'], recent_grads['Median'])
+plt.scatter(recent_grads['ShareWomen'], recent_grads['Unemployment_rate'])
+plt.scatter(recent_grads['Men'], recent_grads['Median'])
+plt.scatter(recent_grads['Women'], recent_grads['Median'])
+
+
+# Do students in more popular majors make more money? - NO - Because the size and median salary scatter plot are not directly proportional
+# Do students that majored in subjects that were majority female make more money? - NO - Because of not proportinality
+# Is there any link between the number of full-time employees and median salary? - doesnot look like there is linear relationship from scatter plot
+
+plt.hist(recent_grads['ShareWomen'])
+
+# What percent of majors are predominantly male? Predominantly female? - if sharewomen > 0.5 then predominantly women,else men.
+# Calculated from the array resulted from hist() which shows the count of the courses of y-axis.
+
+plt.hist(recent_grads['Median'])
+# What's the most common median salary range? -  The highest point of the histogram.
+
+# Import scatter_matrix from the pandas.plotting module to get a scatter matrix
+# A scatter matrix plot combines both scatter plots and histograms into one grid of plots 
+# and allows us to explore potential relationships and distributions simultaneously.
+
+# bar plots to compare the percentages of women (ShareWomen) from the first ten rows and last ten rows of the recent_grads dataframe
+
+recent_grads[:10].plot.bar(x='Major', y='ShareWomen', legend=False)
+recent_grads[163:].plot.bar(x='Major', y='ShareWomen', legend=False)
+
